@@ -6,9 +6,10 @@ Rcpp::List forwardbackward(const arma::mat& transition, const arma::cube& emissi
   const arma::vec& init, const arma::ucube& obs, bool forwardonly, unsigned int threads) {
   
   arma::cube alpha(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k
+  arma::cube emission_probs(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k
   arma::mat scales(obs.n_cols, obs.n_slices); //n,k
   
-  internalForward(transition, emission, init, obs, alpha, scales, threads);
+  internalForward(transition, emission, init, obs, alpha, emission_probs, scales, threads);
   
   if(!scales.is_finite()) {
     Rcpp::stop("Scaling factors contain non-finite values. \n Check the model or try using the log-space version of the algorithm.");
@@ -20,7 +21,8 @@ Rcpp::List forwardbackward(const arma::mat& transition, const arma::cube& emissi
   
   if (forwardonly) {
     return Rcpp::List::create(Rcpp::Named("forward_probs") = Rcpp::wrap(alpha),
-      Rcpp::Named("scaling_factors") = Rcpp::wrap(scales));
+                              Rcpp::Named("emission_prob") = Rcpp::wrap(emission_probs),
+                              Rcpp::Named("scaling_factors") = Rcpp::wrap(scales));
   } else {
     arma::cube beta(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k
     internalBackward(transition, emission, obs, beta, scales, threads);
@@ -28,7 +30,8 @@ Rcpp::List forwardbackward(const arma::mat& transition, const arma::cube& emissi
       Rcpp::stop("Backward probabilities contain non-finite values. Check the model or try using the log-space version of the algorithm.");
     }
     return Rcpp::List::create(Rcpp::Named("forward_probs") = Rcpp::wrap(alpha), Rcpp::Named("backward_probs") = Rcpp::wrap(beta),
-      Rcpp::Named("scaling_factors") = Rcpp::wrap(scales));
+                              Rcpp::Named("emission_prob") = Rcpp::wrap(emission_probs),
+                              Rcpp::Named("scaling_factors") = Rcpp::wrap(scales));
   }
   
 }
