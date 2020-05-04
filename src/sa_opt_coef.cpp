@@ -22,11 +22,12 @@ Rcpp::List estimate_coefs(const arma::mat& transition, const arma::cube& emissio
   }
 
   arma::cube alpha(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k
+  arma::cube emission_probs(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k
   arma::cube beta(emission.n_rows, obs.n_cols, obs.n_slices); //m,n,k
   arma::mat scales(obs.n_cols, obs.n_slices); //m,n,k
 
   arma::sp_mat sp_trans(transition);
-  internalForwardx(sp_trans.t(), emission, initk, obs, alpha, scales, threads);
+  internalForwardx(sp_trans.t(), emission, initk, obs, alpha, emission_probs, scales, threads);
   if(!scales.is_finite()) {
     return Rcpp::List::create(Rcpp::Named("error") = 1);
   }
@@ -63,7 +64,7 @@ Rcpp::List estimate_coefs(const arma::mat& transition, const arma::cube& emissio
     initk.col(k) = init % reparma(weights.col(k), numberOfStates);
   }
 
-  internalForwardx(sp_trans.t(), emission, initk, obs, alpha, scales, threads);
+  internalForwardx(sp_trans.t(), emission, initk, obs, alpha, emission_probs, scales, threads);
   if(!scales.is_finite()) {
     return Rcpp::List::create(Rcpp::Named("error") = 1);
   }
