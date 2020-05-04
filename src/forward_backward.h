@@ -19,5 +19,3 @@ void internalBackward(const arma::mat& transition, const arma::cube& emission,
                       const arma::ucube& obs, arma::cube& beta, const arma::mat& scales, unsigned int threads);
 
 #endif
-
-
