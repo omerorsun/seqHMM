@@ -47,6 +47,8 @@ void internalForwardx(const arma::sp_mat& transition_t, const arma::cube& emissi
         alpha.slice(k).col(0) %= emission.slice(r).col(obs(r, 0, k));
         emission_probs.slice(k).col(0) %= emission.slice(r).col(obs(r, 0, k));
       }
+      scales(0, k) = 1.0 / sum(emission_probs.slice(k).col(0));
+      emission_probs.slice(k).col(0) *= scales(0, k);
       scales(0, k) = 1.0 / sum(alpha.slice(k).col(0));
       alpha.slice(k).col(0) *= scales(0, k);
       for (unsigned int t = 1; t < obs.n_cols; t++) {
